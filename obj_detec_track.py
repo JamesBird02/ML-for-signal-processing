@@ -42,18 +42,22 @@ while True:
         x, y, w, h = cv.boundingRect(contour)
         cv.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
-        # Use the first detected contour for tracking
+        # Use first detected contour for tracking
         if track_window is None:
             track_window = (x, y, w, h)
 
-            # Set up the Region of interest for tracking
+            # Set up ROI for tracking
             roi = frame[y:y+h, x:x+w]
-            hsv_roi = cv.cvtColor(roi, cv.COLOR_BGR2HSV)
+            # convert to hue saturation 
+            hsv_roi = cv.cvtColor(roi, cv.COLOR_BGR2HSV) 
+            # converts mask where pixels in range become white and others black
             mask = cv.inRange(hsv_roi, np.array((0., 60., 32.)), np.array((180., 255., 255.)))
+            # create a histogram of the hue and saturation values in the mask
             roi_hist = cv.calcHist([hsv_roi], [0], mask, [180], [0, 180])
+            # Normalises values in histogram from 0 to 255
             cv.normalize(roi_hist, roi_hist, 0, 255, cv.NORM_MINMAX)
 
-            # Set up termination criteria for meanshift tracking
+            # termination criteria for meanshift tracking
             term_crit = (cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1)
 
     # Perform meanshift tracking if the initial window is set
